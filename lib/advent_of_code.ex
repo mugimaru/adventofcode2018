@@ -6,9 +6,16 @@ defmodule AdventOfCode do
   @spec main(list(String.t())) :: any
   @doc "Escript entry point."
   def main([]), do: main(["help"])
+
   def main(["help"]), do: IO.puts("Usage: `./aoc 1 2` to solve part `2` from pullze `1`.")
-  # credo:disable-for-this-file Credo.Check.Warning.IoInspect
-  def main([day, part]), do: solve(day, part) |> IO.inspect()
+
+  def main([day, part]) do
+    started_at = :erlang.system_time(:millisecond)
+    result = solve(day, part)
+    time_spent_ms = :erlang.system_time(:millisecond) - started_at
+    IO.puts("Puzzle #{day}.#{part} solved in #{time_spent_ms}ms, result: \n#{inspect(result)}")
+  end
+
   def main(_), do: main(["help"])
 
   @spec solve(day :: String.t() | integer(), part :: String.t()) :: term | {:error, String.t()}
