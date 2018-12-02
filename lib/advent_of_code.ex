@@ -6,20 +6,21 @@ defmodule AdventOfCode do
   @spec main(list(String.t())) :: any
   @doc "Escript entry point."
   def main([]), do: main(["help"])
-  def main(["help"]), do: IO.puts("Usage: `./aoc 1` where `1` is number of the puzzle.")
+  def main(["help"]), do: IO.puts("Usage: `./aoc 1 2` to solve part `2` from pullze `1`.")
   # credo:disable-for-this-file Credo.Check.Warning.IoInspect
-  def main([day]), do: solve(day) |> IO.inspect()
+  def main([day, part]), do: solve(day, part) |> IO.inspect()
+  def main(_), do: main(["help"])
 
-  @spec solve(String.t() | integer()) :: term | {:error, String.t()}
+  @spec solve(day :: String.t() | integer(), part :: String.t()) :: term | {:error, String.t()}
   @doc "Solves a puzzle for specified day."
-  def solve(day) when is_integer(day), do: solve(to_string(day))
+  def solve(day, part) when is_integer(day), do: solve(to_string(day), part)
 
-  def solve(day) do
+  def solve(day, part) do
     day_with_pad = String.pad_leading(day, 2, "0")
 
     with {:ok, module} <- solver_module(day_with_pad) do
       try do
-        apply(module, :solve, [input(day_with_pad)])
+        apply(module, :solve, [part, input(day_with_pad)])
       rescue
         err ->
           {:error, inspect(err)}
