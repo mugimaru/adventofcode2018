@@ -11,6 +11,6 @@ mix escript.build
 
 ## Usage
 
-To solve a puzzle from day 1 run
-    
-    ./aoc 1
+To solve second part of a puzzle from day 1 run
+
+    ./aoc 1 2
