@@ -27,20 +27,16 @@ defmodule AdventOfCode.Day02 do
   def solve("2", input) do
     ids = input |> String.split("\n")
 
-    Enum.reduce_while(ids, ids, fn current_id, ids_to_compare ->
-      result =
-        ids_to_compare
-        |> Stream.map(fn id -> {id, diff(id, current_id)} end)
-        |> Enum.find(fn {_id, diff} -> Enum.count(diff) == 1 end)
+    {{box_id, _second_box_id}, [diff_index]} =
+      Stream.flat_map(ids, fn a ->
+        Stream.flat_map(ids, fn b -> [{a, b}] end)
+      end)
+      |> Stream.filter(fn {a, b} -> a != b end)
+      |> Stream.uniq_by(fn {a, b} -> {min(a, b), max(a, b)} end)
+      |> Stream.map(fn {a, b} -> {{a, b}, diff(a, b)} end)
+      |> Enum.find(fn {_, diff} -> Enum.count(diff) == 1 end)
 
-      case result do
-        nil ->
-          {:cont, ids_to_compare}
-
-        {found_id, [diff_index]} ->
-          {:halt, found_id |> String.codepoints() |> List.delete_at(diff_index) |> Enum.join()}
-      end
-    end)
+    box_id |> String.codepoints() |> List.delete_at(diff_index) |> Enum.join()
   end
 
   defp count_letters(string) do
