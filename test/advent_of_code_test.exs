@@ -1,7 +1,9 @@
 defmodule AdventOfCodeTest do
   use ExUnit.Case
   doctest AdventOfCode
+  doctest AdventOfCode.Utils, import: true
   doctest AdventOfCode.Day01
+  doctest AdventOfCode.Day02
 
   describe ".solve" do
     test "returns solver result" do
