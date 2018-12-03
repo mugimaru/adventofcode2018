@@ -13,34 +13,29 @@ defmodule AdventOfCode.Day03 do
       iex> List.last(op)
       {7, 5}
 
+      iex> import AdventOfCode.Day03.ElvenPlan
+      iex> overlap?(from_string!("#1 @ 1,3: 4x4"), from_string!("#2 @ 3,1: 4x4"))
+      true
+      iex> overlap?(from_string!("#1 @ 1,3: 4x4"), from_string!("#3 @ 5,5: 2x2"))
+      false
+      iex> overlap?(from_string!("#2 @ 3,1: 4x4"), from_string!("#3 @ 5,5: 2x2"))
+      false
+
   ## Part 1
 
       iex> input = %Stream{enum: ["#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 2x2"], funs: []}
       iex> AdventOfCode.Day03.solve("1", input)
       4
+
+  ## Part 2
+
+      iex> input = %Stream{enum: ["#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 2x2"], funs: []}
+      iex> AdventOfCode.Day03.solve("2", input)
+      [3]
   """
 
   import AdventOfCode.Utils, only: [map_increment: 2]
-
-  defmodule ElvenPlan do
-    @moduledoc false
-
-    defstruct [:id, :x, :y, :width, :height]
-    @type t :: %__MODULE__{id: integer, x: integer, y: integer, width: integer, height: integer}
-
-    @spec from_string!(String.t()) :: __MODULE__.t()
-
-    def from_string!(<<_::8, string::binary>>) do
-      [id, x, y, width, height] = String.split(string, ~r/\D+/) |> Enum.map(&String.to_integer/1)
-      struct(__MODULE__, id: id, x: x, y: y, width: width, height: height)
-    end
-
-    @spec occupied_points(__MODULE__.t()) :: list({integer, integer})
-
-    def occupied_points(%__MODULE__{x: px, y: py, width: width, height: height}) do
-      for x <- 0..(width - 1), y <- 0..(height - 1), do: {x + px, y + py}
-    end
-  end
+  alias AdventOfCode.Day03.ElvenPlan
 
   @spec solve(part :: String.t(), file_stream :: Stream.t()) :: integer
   def solve("1", file_stream) do
@@ -52,5 +47,20 @@ defmodule AdventOfCode.Day03 do
     end)
     |> Enum.filter(fn {_k, v} -> v > 1 end)
     |> Enum.count()
+  end
+
+  def solve("2", file_stream) do
+    plans = Enum.map(file_stream, &ElvenPlan.from_string!/1)
+    plan = find_non_overlapping(plans, plans)
+
+    [plan.id]
+  end
+
+  defp find_non_overlapping([current | rest], plans) do
+    if Enum.all?(plans, fn plan -> plan.id == current.id || not ElvenPlan.overlap?(current, plan) end) do
+      current
+    else
+      find_non_overlapping(rest, plans)
+    end
   end
 end
