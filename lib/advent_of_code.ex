@@ -27,7 +27,7 @@ defmodule AdventOfCode do
 
     with {:ok, module} <- solver_module(day_with_pad) do
       try do
-        apply(module, :solve, [part, input(day_with_pad)])
+        apply(module, :solve, [part, AdventOfCode.Input.get(day_with_pad)])
       rescue
         err ->
           {:error, inspect(err)}
@@ -44,13 +44,5 @@ defmodule AdventOfCode do
   rescue
     ArgumentError ->
       {:error, :module_not_found}
-  end
-
-  defp input(day) do
-    day |> input_file_path() |> File.read!()
-  end
-
-  defp input_file_path(day) do
-    Path.join([File.cwd!(), "inputs", day])
   end
 end
