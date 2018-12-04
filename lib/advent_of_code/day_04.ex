@@ -2,7 +2,6 @@ defmodule AdventOfCode.Day04 do
   @moduledoc ~S"""
   [Advent Of Code day 4](https://adventofcode.com/2018/day/4).
 
-  # Part 1
       iex> inp = ["[1518-11-01 00:00] Guard #10 begins shift",
       ...>         "[1518-11-01 00:05] falls asleep",
       ...>         "[1518-11-01 00:25] wakes up",
@@ -22,55 +21,74 @@ defmodule AdventOfCode.Day04 do
       ...>         "[1518-11-05 00:55] wakes up"]
       iex> AdventOfCode.Day04.solve("1", inp)
       240
+      iex> AdventOfCode.Day04.solve("2", inp)
+      4455
   """
-
-  alias __MODULE__.LogParser
 
   import AdventOfCode.Utils, only: [map_increment: 2]
 
   @spec solve(part :: String.t(), file_stream :: Stream.t()) :: integer
   def solve("1", file_stream) do
-    {guard_id, minutes} =
-      file_stream
-      |> Stream.map(&LogParser.parse/1)
-      |> Enum.sort_by(fn {date, h, m, _} -> {date, h, m} end)
-      |> Enum.reduce({%{}, nil, nil}, &do_reduce_by_date/2)
-      |> elem(0)
-      |> find_guard_with_the_most_minutes_asleep()
+    do_solve(file_stream, &max_by_the_most_minutes_asleep/1)
+  end
 
-    {minute, _} = Enum.reduce(minutes, %{}, &map_increment(&2, &1)) |> Enum.max_by(fn {_k, v} -> v end)
+  @spec solve(part :: String.t(), file_stream :: Stream.t()) :: integer
+  def solve("2", file_stream) do
+    do_solve(file_stream, &max_by_the_most_frequent_minute/1)
+  end
+
+  defp max_by_the_most_frequent_minute({_guard_id, minutes}) do
+    {_minute, number_of_days} = find_the_most_frequent_minute(minutes)
+    number_of_days
+  end
+
+  defp max_by_the_most_minutes_asleep({_guard_id, minutes}) do
+    Enum.reduce(minutes, 0, fn {_minute, number_of_days}, acc -> acc + number_of_days end)
+  end
+
+  defp do_solve(file_stream, max_by_fun) do
+    {guard_id, minute} =
+      file_stream
+      |> Enum.sort()
+      |> Stream.map(&__MODULE__.LogParser.parse/1)
+      |> Enum.reduce({%{}, nil, nil}, &reduce_log_record_into_guards_stats/2)
+      |> elem(0)
+      |> find_guard_and_minute(max_by_fun)
 
     guard_id * minute
   end
 
-  defp find_guard_with_the_most_minutes_asleep(stats_by_date) do
-    Enum.reduce(stats_by_date, %{}, fn {_day, {guard_id, minutes}}, map ->
-      Map.get_and_update(map, guard_id, fn
-        nil ->
-          {nil, minutes}
+  defp find_guard_and_minute(stats, max_by_fun) do
+    {guard_id, minutes} = Enum.max_by(stats, max_by_fun)
+    {minute, _number_of_days} = find_the_most_frequent_minute(minutes)
 
-        data ->
-          {data, data ++ minutes}
-      end)
-      |> elem(1)
+    {guard_id, minute}
+  end
+
+  defp find_the_most_frequent_minute(minutes) do
+    Enum.max_by(minutes, fn {_minute, number_of_days} -> number_of_days end)
+  end
+
+  defp reduce_log_record_into_guards_stats({minute, {:begins_shift, new_guard_id}}, {stats, _, _}) do
+    {stats, new_guard_id, {:awake, minute}}
+  end
+
+  defp reduce_log_record_into_guards_stats({minute, :falls_asleep}, {stats, guard_id, {:awake, _since_minute}}) do
+    {stats, guard_id, {:asleep, minute}}
+  end
+
+  defp reduce_log_record_into_guards_stats({minute, :wakes_up}, {stats, guard_id, {:asleep, since_minute}}) do
+    {do_update_guard_stats(stats, guard_id, since_minute, minute - 1), guard_id, {:awake, minute}}
+  end
+
+  defp reduce_log_record_into_guards_stats({_minute, event}, {_stats, guard_id, guard_state}) do
+    raise ArgumentError, "Got #{event} event when guard##{guard_id} is in #{inspect(guard_state)} state"
+  end
+
+  defp do_update_guard_stats(stats, guard_id, from_minute, to_minute) do
+    Enum.reduce(from_minute..to_minute, stats, fn minute, stats ->
+      guard_stats = Map.get(stats, guard_id, %{})
+      Map.put(stats, guard_id, map_increment(guard_stats, minute))
     end)
-    |> Enum.max_by(fn {_guard_id, minutes} -> Enum.count(minutes) end)
-  end
-
-  defp do_reduce_by_date({_day, _hour, minute, {:begins_shift, new_guard_id}}, {logs, _, _}) do
-    {logs, new_guard_id, {:awake, minute}}
-  end
-
-  defp do_reduce_by_date({day, _hour, minute, :wakes_up}, {logs, guard_id, {:asleep, since_minute}}) do
-    {update_logs(logs, day, guard_id, since_minute, minute), guard_id, {:awake, minute}}
-  end
-
-  defp do_reduce_by_date({_day, _hour, minute, :falls_asleep}, {logs, guard_id, {:awake, _since_minute}}) do
-    {logs, guard_id, {:asleep, minute}}
-  end
-
-  defp update_logs(logs, day, guard_id, from, to) do
-    {^guard_id, minutes_asleep} = Map.get(logs, day, {guard_id, []})
-    Map.put(logs, day, {guard_id, minutes_asleep ++ Enum.into(from..to, [])})
   end
 end

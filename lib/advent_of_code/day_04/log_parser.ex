@@ -4,7 +4,7 @@ defmodule AdventOfCode.Day04.LogParser do
   @regex ~r/\[(?<day>\d\d\d\d-\d\d-\d\d+) (?<hour>\d\d):(?<minute>\d\d)\] (?<msg>.+)/
 
   @type event_data :: :wakes_up | :falls_asleep | {:begins_shift, guard_id :: integer}
-  @type event :: {day :: String.t(), hour :: integer, minute :: integer, event_data()}
+  @type event :: {minute :: integer, event_data()}
 
   @spec parse(line :: String.t()) :: event()
   def parse(line) do
@@ -12,8 +12,8 @@ defmodule AdventOfCode.Day04.LogParser do
       nil ->
         raise ArgumentError, "invalid input line"
 
-      %{"msg" => msg, "day" => day, "hour" => hour, "minute" => minute} ->
-        {day, String.to_integer(hour), String.to_integer(minute), parse_event_data(msg)}
+      %{"msg" => msg, "minute" => minute} ->
+        {String.to_integer(minute), parse_event_data(msg)}
     end
   end
 
