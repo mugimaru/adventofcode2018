@@ -5,10 +5,13 @@ defmodule AdventOfCode.Day06 do
       iex> input = Enum.join(["1, 1", "1, 6", "8, 3", "3, 4", "5, 5", "8, 9"], "\n")
       iex> AdventOfCode.Day06.solve("1", input)
       17
+      iex> AdventOfCode.Day06.solve("2", input, 32)
+      16
   """
   import AdventOfCode.Utils, only: [map_increment: 2]
 
   @spec solve(part :: String.t(), String.t()) :: integer
+  @spec solve(part :: String.t(), String.t(), max_distance :: integer) :: integer
 
   def solve("1", input) do
     {{{min_x, min_y}, {max_x, max_y}}, coordinates} = parse_coordinates(input)
@@ -19,6 +22,16 @@ defmodule AdventOfCode.Day06 do
       |> Enum.max_by(fn {_point, frequency} -> frequency end)
 
     frequency
+  end
+
+  @max_distance 10_000
+  def solve("2", input, max_distance \\ @max_distance) do
+    {{{min_x, min_y}, {max_x, max_y}}, coordinates} = parse_coordinates(input)
+
+    for(x <- min_x..max_x, y <- min_y..max_y, do: {x, y})
+    |> Enum.count(fn p1 ->
+      Enum.reduce(coordinates, 0, fn p2, acc -> acc + manhattan_distance(p1, p2) end) < max_distance
+    end)
   end
 
   defp manhattan_distance({x, y}, {x1, y1}) do
