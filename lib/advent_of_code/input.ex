@@ -2,7 +2,7 @@ defmodule AdventOfCode.Input do
   @moduledoc """
   AoC input reader.
   """
-  @stream_lines_for ["03", "04"]
+  @stream_lines_for ["03", "04", "07"]
 
   @doc "Returns an input for given day."
   @spec get(day :: String.t()) :: term
