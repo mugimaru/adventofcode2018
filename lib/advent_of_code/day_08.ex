@@ -2,8 +2,11 @@ defmodule AdventOfCode.Day08 do
   @moduledoc ~S"""
   [Advent Of Code day 8](https://adventofcode.com/2018/day/8).
 
-  iex> AdventOfCode.Day08.solve("1", "2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2")
-  138
+      iex> AdventOfCode.Day08.solve("1", "2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2")
+      138
+
+      iex> AdventOfCode.Day08.solve("2", "2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2")
+      66
   """
   import AdventOfCode.Utils, only: [sum_by: 2]
 
@@ -13,6 +16,24 @@ defmodule AdventOfCode.Day08 do
     |> read_node()
     |> elem(0)
     |> sum_meta()
+  end
+
+  def solve("2", input) do
+    input
+    |> parse_input()
+    |> read_node()
+    |> elem(0)
+    |> node_value()
+  end
+
+  defp node_value([children, meta]) do
+    if children == [] do
+      Enum.sum(meta)
+    else
+      meta
+      |> Enum.filter(fn m -> m > 0 && m <= Enum.count(children) end)
+      |> sum_by(fn i -> Enum.reverse(children) |> Enum.at(i - 1) |> node_value() end)
+    end
   end
 
   defp sum_meta([]), do: 0
