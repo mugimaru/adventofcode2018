@@ -23,4 +23,13 @@ defmodule AdventOfCode.Utils do
 
     updated_map
   end
+
+  @spec sum_by(enum :: Enumerable.t(), fun :: function) :: integer
+  @doc """
+  `sum_by(enum, fun)` is equal to `Enum.map(enum, fun) |> Enum.sum()` but made in one pass.
+
+      iex> sum_by([2, 4], fn item -> item * item end)
+      20
+  """
+  def sum_by(enum, fun), do: Enum.reduce(enum, 0, fn item, acc -> acc + fun.(item) end)
 end
