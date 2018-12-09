@@ -22,6 +22,7 @@ defmodule AdventOfCode.Day09 do
       iex> AdventOfCode.Day09.solve("1", {30, 5807})
       37305
   """
+  @ruby_solution Path.join([File.cwd!, "lib/advent_of_code/day_09.rb"])
 
   import AdventOfCode.Utils, only: [map_increment: 3]
 
@@ -84,7 +85,27 @@ defmodule AdventOfCode.Day09 do
     end
   end
 
-  def solve("1", {number_of_players, marbles}) do
+  if Mix.env() == :test do
+    def solve("1", {number_of_players, marbles}) do
+      do_solve(number_of_players, marbles)
+    end
+  else
+    def solve("1", {number_of_players, marbles}) do
+      do_solve_in_ruby(number_of_players, marbles)
+    end
+  end
+
+  def solve("2", {number_or_players, marbles}), do: solve("1", {number_or_players, marbles * 100})
+
+  defp do_solve_in_ruby(a, b) do
+    "ruby"
+    |> System.cmd([@ruby_solution, to_string(a), to_string(b)])
+    |> elem(0)
+    |> String.trim_trailing()
+    |> String.to_integer()
+  end
+
+  defp do_solve(number_of_players, marbles) do
     players = Enum.into(1..number_of_players, %{}, &{&1, 0})
 
     Enum.reduce(1..marbles, {Circle.new([0], []), players}, fn marble, {circle, players} ->
@@ -103,6 +124,4 @@ defmodule AdventOfCode.Day09 do
     |> Map.values()
     |> Enum.max()
   end
-
-  def solve("2", {number_or_players, marbles}), do: solve("1", {number_or_players, marbles * 100})
 end
