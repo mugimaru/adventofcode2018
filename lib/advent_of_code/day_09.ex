@@ -22,82 +22,20 @@ defmodule AdventOfCode.Day09 do
       iex> AdventOfCode.Day09.solve("1", {30, 5807})
       37305
   """
-  @ruby_solution Path.join([File.cwd!, "lib/advent_of_code/day_09.rb"])
 
   import AdventOfCode.Utils, only: [map_increment: 3]
+  alias __MODULE__.Circle
 
-  defmodule Circle do
-    defstruct left: [], right: []
+  @ruby_solution Path.join([File.cwd!, "lib/advent_of_code/day_09.rb"])
+  @solution_method if Mix.env() == :test, do: :do_solve, else: :do_solve_in_ruby
 
-    def new(l, r), do: struct(__MODULE__, left: l, right: r)
-
-    def rotate_counter_clockwise(%{left: []} = circle) do
-      rotate_counter_clockwise(%{circle | right: [], left: circle.right})
-    end
-
-    def rotate_counter_clockwise(circle) do
-      with {value, list} <- List.pop_at(circle.left, -1) do
-        %{circle | right: [value | circle.right], left: list}
-      end
-    end
-
-    def rotate_clockwise(%{right: []} = circle) do
-      rotate_clockwise(%{circle | left: [], right: circle.left})
-    end
-
-    def rotate_clockwise(%{right: [value | list]} = circle) do
-      %{circle | left: List.insert_at(circle.left, -1, value), right: list}
-    end
-
-    def rotate(circle, n) when n < 0, do: do_rotate(abs(n), circle, :rotate_clockwise)
-    def rotate(circle, 0), do: circle
-    def rotate(circle, n), do: do_rotate(n, circle, :rotate_counter_clockwise)
-
-    def push(circle, value) do
-      %{circle | left: List.insert_at(circle.left, -1, value)}
-    end
-
-    def pop(%{left: []} = circle) do
-      with {value, rest} <- List.pop_at(circle.right, -1) do
-        {value, %{circle | right: rest}}
-      end
-    end
-
-    def pop(circle) do
-      with {value, rest} <- List.pop_at(circle.left, -1) do
-        {value, %{circle | left: rest}}
-      end
-    end
-
-    defp do_rotate(times, circle, fun_name) do
-      Enum.reduce(1..times, circle, fn _, c ->
-        apply(__MODULE__, fun_name, [c])
-      end)
-    end
-
-    defimpl Inspect, for: __MODULE__ do
-      def inspect(%{left: left, right: right}, _opts) do
-        Enum.join(mark_current(left) ++ right, " ")
-      end
-
-      defp mark_current([last]), do: ["(#{last})"]
-      defp mark_current([h | t]), do: [h | mark_current(t)]
-    end
-  end
-
-  if Mix.env() == :test do
-    def solve("1", {number_of_players, marbles}) do
-      do_solve(number_of_players, marbles)
-    end
-  else
-    def solve("1", {number_of_players, marbles}) do
-      do_solve_in_ruby(number_of_players, marbles)
-    end
+  def solve("1", {number_of_players, marbles}) do
+    apply(__MODULE__, @solution_method, [number_of_players, marbles])
   end
 
   def solve("2", {number_or_players, marbles}), do: solve("1", {number_or_players, marbles * 100})
 
-  defp do_solve_in_ruby(a, b) do
+  def do_solve_in_ruby(a, b) do
     "ruby"
     |> System.cmd([@ruby_solution, to_string(a), to_string(b)])
     |> elem(0)
@@ -105,7 +43,7 @@ defmodule AdventOfCode.Day09 do
     |> String.to_integer()
   end
 
-  defp do_solve(number_of_players, marbles) do
+  def do_solve(number_of_players, marbles) do
     players = Enum.into(1..number_of_players, %{}, &{&1, 0})
 
     Enum.reduce(1..marbles, {Circle.new([0], []), players}, fn marble, {circle, players} ->
