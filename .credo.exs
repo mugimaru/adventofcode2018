@@ -90,7 +90,7 @@
         {Credo.Check.Readability.TrailingBlankLine},
         {Credo.Check.Readability.TrailingWhiteSpace},
         {Credo.Check.Readability.VariableNames},
-        {Credo.Check.Readability.Specs},
+        {Credo.Check.Readability.Specs, false},
 
         {Credo.Check.Refactor.ABCSize, max_size: 50},
         {Credo.Check.Refactor.CondStatements},
