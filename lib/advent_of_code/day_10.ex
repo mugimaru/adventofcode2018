@@ -4,62 +4,56 @@ defmodule AdventOfCode.Day10 do
   """
 
   @spec solve(day :: String.t(), input :: Enumerable.t()) :: :ok
+  @spec solve(day :: String.t(), input :: Enumerable.t(), io_device :: term) :: :ok
 
   def solve(day, input), do: solve(day, input, :stdio)
 
-  def solve("1", input, io_device) do
-    points = Enum.map(input, &parse_line/1)
+  def solve(_part, input, io_device) do
+    points = Enum.into(input, %{}, &parse_line/1)
 
-    Stream.iterate(0, &(&1 + 1))
-    |> Enum.take_while(fn step ->
-      points_at_step = iterate(points, step)
-
-      if all_points_connected?(points_at_step) do
-        IO.puts(io_device, "At step #{step}:")
-        print(points_at_step, io_device)
-        false
-      else
-        true
-      end
-    end)
+    1
+    |> Stream.iterate(&(&1 + 1))
+    |> Enum.take_while(&iterate(points, &1, io_device))
 
     :ok
   end
 
-  def solve("2", input, io_device), do: solve("1", input, io_device)
+  defp iterate(points, step, io_device) do
+    points_at_step = points_at(points, step)
 
-  def iterate([], _), do: []
-
-  def iterate([head | rest], times) do
-    {{x, y}, {vx, vy}} = head
-    new_head = {{x + vx * times, y + vy * times}, {vx, vy}}
-    [new_head | iterate(rest, times)]
+    if all_points_connected?(points_at_step) do
+      IO.puts(io_device, "At step #{step}:")
+      IO.write(io_device, points_at_step |> printable_grid() |> Enum.join("\n"))
+      false
+    else
+      true
+    end
   end
 
-  defp print(points, io_device) do
-    points_map = Enum.into(points, %{}, &{elem(&1, 0), 1})
-    {min_x, max_x} = Enum.map(points, fn {{x, _}, _} -> x end) |> Enum.min_max()
-    {min_y, max_y} = Enum.map(points, fn {{_, y}, _} -> y end) |> Enum.min_max()
+  defp points_at(points, step) do
+    Enum.into(points, %{}, fn {{x, y}, {vx, vy}} ->
+      {{x + vx * step, y + vy * step}, {vx, vy}}
+    end)
+  end
+
+  defp printable_grid(points_map) do
+    {min_x, max_x} = Enum.map(points_map, fn {{x, _}, _} -> x end) |> Enum.min_max()
+    {min_y, max_y} = Enum.map(points_map, fn {{_, y}, _} -> y end) |> Enum.min_max()
 
     for y <- min_y..max_y do
-      row =
-        min_x..max_x
-        |> Enum.map(fn x -> if Map.has_key?(points_map, {x, y}), do: "#", else: "." end)
-        |> Enum.join()
-
-      IO.puts(io_device, row)
+      min_x..max_x
+      |> Enum.map(fn x -> if Map.has_key?(points_map, {x, y}), do: "#", else: "." end)
+      |> Enum.join()
     end
   end
 
   defp all_points_connected?(points) do
-    points_map = Enum.into(points, %{}, &{elem(&1, 0), 1})
-
     Enum.all?(points, fn {point, _v} ->
-      Enum.any?(connected_points(point), &Map.has_key?(points_map, &1))
+      points_around(point) |> Enum.any?(&Map.has_key?(points, &1))
     end)
   end
 
-  defp connected_points({px, py}) do
+  defp points_around({px, py}) do
     for x <- -1..1, y <- -1..1, x != 0 || y != 0, do: {px + x, py + y}
   end
 
