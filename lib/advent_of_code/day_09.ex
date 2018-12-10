@@ -26,7 +26,7 @@ defmodule AdventOfCode.Day09 do
   import AdventOfCode.Utils, only: [map_increment: 3]
   alias __MODULE__.Circle
 
-  @ruby_solution Path.join([File.cwd!, "lib/advent_of_code/day_09.rb"])
+  @ruby_solution Path.join([File.cwd!(), "lib/advent_of_code/day_09.rb"])
   @solution_method if Mix.env() == :test, do: :do_solve, else: :do_solve_in_ruby
 
   def solve("1", {number_of_players, marbles}) do
