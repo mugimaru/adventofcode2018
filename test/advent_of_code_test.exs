@@ -12,6 +12,7 @@ defmodule AdventOfCodeTest do
   doctest AdventOfCode.Day08
   doctest AdventOfCode.Day09
   doctest AdventOfCode.Day10
+  doctest AdventOfCode.Day11
 
   describe ".solve" do
     test "returns solver result" do
