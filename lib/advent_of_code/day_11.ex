@@ -37,22 +37,24 @@ defmodule AdventOfCode.Day11 do
   def solve("2", serial_number) do
     power_levels = calculate_power_levels(serial_number)
 
-    (1..300)
-    |> Stream.map(&do_solve(power_levels, &1))
+    1..300
+    |> Task.async_stream(&do_solve(power_levels, &1), ordered: false, timeout: 1_000_000)
+    |> Stream.map(fn {:ok, res} -> res end)
     |> Enum.max_by(fn {_first_point, power_level, _square_size} -> power_level end)
   end
 
   defp do_solve(power_levels, square_size) do
     range = 1..@grid_size
+
     {point, power_level} =
-      (for x <- range, y <- range, square_inside_grid?({x, y}, square_size), do: {{x, y}, total_power({x, y}, power_levels, square_size)})
+      for(x <- range, y <- range, square_inside_grid?({x, y}, square_size), do: {{x, y}, total_power({x, y}, power_levels, square_size)})
       |> Enum.max_by(fn {_point, power} -> power end)
 
     {point, power_level, square_size}
   end
 
   defp calculate_power_levels(serial_number) do
-    Enum.into((for x <- (1..@grid_size), y <- (1..@grid_size), do: {x, y}), %{}, fn point -> {point, power_level(point, serial_number)} end)
+    Enum.into(for(x <- 1..@grid_size, y <- 1..@grid_size, do: {x, y}), %{}, fn point -> {point, power_level(point, serial_number)} end)
   end
 
   defp total_power(points, power_levels) when is_list(points) do
@@ -64,7 +66,7 @@ defmodule AdventOfCode.Day11 do
   end
 
   defp square_points({px, py}, square_size) do
-    range = (0..square_size - 1)
+    range = 0..(square_size - 1)
     for x <- range, y <- range, do: {px + x, py + y}
   end
 
