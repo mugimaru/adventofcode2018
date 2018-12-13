@@ -7,6 +7,7 @@ defmodule AdventOfCode.Input do
   @doc "Returns an input for given day."
   @spec get(day :: String.t()) :: term
 
+  def get("13"), do: read_raw_file("13")
   def get("11"), do: 5235
   def get("09"), do: {410, 72059}
 
@@ -19,6 +20,13 @@ defmodule AdventOfCode.Input do
 
   defp stream_file_lines!(day) do
     day |> input_file_path() |> File.stream!([], :line) |> Stream.map(&String.trim_trailing/1)
+  end
+
+  defp read_raw_file(day) do
+    {:ok, pid} = day |> input_file_path() |> File.open()
+    content = IO.binread(pid, :all)
+    :ok = File.close(pid)
+    content
   end
 
   defp input_file_path(day) do

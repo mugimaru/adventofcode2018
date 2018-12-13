@@ -30,6 +30,8 @@ defmodule AdventOfCode do
         apply(module, :solve, [part, AdventOfCode.Input.get(day_with_pad)])
       rescue
         err ->
+          IO.inspect(err)
+          IO.puts(Exception.format_stacktrace(__STACKTRACE__))
           {:error, inspect(err)}
       end
     else
