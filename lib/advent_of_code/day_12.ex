@@ -26,7 +26,7 @@ defmodule AdventOfCode.Day12 do
       ...>   "###.# => #",
       ...>   "####. => #"
       ...> ], "\n")
-      iex> {first_gen, rules} = parse_input(input)
+      iex> {_first_gen, _rules} = parse_input(input)
       {
         [1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1],
         %{

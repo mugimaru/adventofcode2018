@@ -92,4 +92,20 @@ defmodule AdventOfCode.Day14 do
     1..(iterations + 10) |> Enum.each(fn _ -> Recipes.iterate() end)
     Recipes.show_scoreboard(iterations)
   end
+
+  def solve("2", x) do
+    Recipes.start_link(37)
+    do_iterate(to_string(x), 0)
+  end
+
+  defp do_iterate(x, n) do
+    n = n + 1
+    Recipes.iterate()
+
+    if n > 10 && String.starts_with?(Recipes.show_scoreboard(n - 10), x) do
+      n - 10
+    else
+      do_iterate(x, n)
+    end
+  end
 end
