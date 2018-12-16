@@ -7,6 +7,10 @@ defmodule AdventOfCode.Input do
   @doc "Returns an input for given day."
   @spec get(day :: String.t()) :: term
 
+  def get("16") do
+    {read_file!("16_1"), read_file!("16_2")}
+  end
+
   def get("14"), do: 637_061
   def get("13"), do: read_raw_file("13")
   def get("11"), do: 5235
