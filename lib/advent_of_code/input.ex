@@ -7,6 +7,8 @@ defmodule AdventOfCode.Input do
   @doc "Returns an input for given day."
   @spec get(day :: String.t()) :: term
 
+  def get("17"), do: stream_file_lines!("17")
+
   def get("16") do
     {read_file!("16_1"), read_file!("16_2")}
   end
