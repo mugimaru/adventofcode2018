@@ -17,12 +17,22 @@ defmodule AdventOfCode.Day18 do
   def solve("2", input) do
     grid = input |> parse_input()
 
-    Enum.reduce_while(1..1_000_000_000, grid, fn _n, grid ->
-      # grid starts to cycle at some point. We need to figure out the pattern and apply it to the rest of iterations
-      new_grid = iterate(grid)
-      new_grid |> print() |> IO.puts()
-      {:cont, new_grid}
-    end)
+    {grid, iterations_left} =
+      Enum.reduce_while(Stream.iterate(1, &(&1 + 1)), {grid, %{}}, fn i, {grid, stats} ->
+        new_grid = iterate(grid)
+        id = grid_id(new_grid)
+
+        case Map.get(stats, id) do
+          nil ->
+            {:cont, {new_grid, Map.put(stats, id, i)}}
+
+          prev_i ->
+            iterations_left = rem(1_000_000_000 - i, i - prev_i)
+            {:halt, {new_grid, iterations_left}}
+        end
+      end)
+
+    Enum.reduce(1..iterations_left, grid, fn _, grid -> iterate(grid) end) |> resources_value()
   end
 
   def iterate(grid) do
@@ -30,6 +40,8 @@ defmodule AdventOfCode.Day18 do
       Map.put(acc, point, next_value(value, adj_stats(grid, point)))
     end)
   end
+
+  defp grid_id(grid), do: Enum.map(grid, fn {_, v} -> v end)
 
   defp resources_value(grid) do
     stats = Enum.reduce(grid, %{}, fn {_point, value}, acc -> map_increment(acc, value) end)
